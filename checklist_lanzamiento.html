@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Checklist de Lanzamiento — Operis</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Epilogue:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+
+:root {
+  --bg: #fafaf7;
+  --ink: #111110;
+  --border: #d0cdc4;
+  --muted: #7a7870;
+  --red: #c0392b;
+  --orange: #e67e22;
+  --green: #27ae60;
+  --blue: #2980b9;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Epilogue', sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  padding: 40px 20px;
+}
+
+.page { max-width: 900px; margin: 0 auto; }
+
+h1 {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  letter-spacing: -0.02em;
+}
+
+.subtitle {
+  color: var(--muted);
+  margin-bottom: 40px;
+  font-size: 14px;
+}
+
+.priority-label {
+  display: inline-block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 2px;
+  font-weight: 500;
+  margin-bottom: 16px;
+}
+
+.p-critical { background: #fde8e8; color: var(--red); border: 1px solid #f5c6c6; }
+.p-high     { background: #fef3e8; color: var(--orange); border: 1px solid #f5ddc6; }
+.p-medium   { background: #e8f5ef; color: var(--green); border: 1px solid #c6f0dc; }
+.p-low      { background: #e8f0f7; color: var(--blue); border: 1px solid #c6ddf5; }
+
+.section {
+  background: white;
+  border: 1px solid var(--border);
+  margin-bottom: 24px;
+  padding: 32px;
+}
+
+.section-header {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.count {
+  font-size: 10px;
+  background: var(--bg);
+  padding: 2px 8px;
+  border-radius: 2px;
+}
+
+.checklist {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.checklist li {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.checklist li:last-child { border-bottom: none; }
+
+.checkbox {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--border);
+  border-radius: 2px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.task-text { flex: 1; }
+.task-text strong { font-weight: 600; color: var(--ink); }
+
+.note {
+  background: #fef9e8;
+  border-left: 3px solid #e67e22;
+  padding: 16px 20px;
+  margin: 24px 0;
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.note strong { font-weight: 600; }
+
+.timeline {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 24px;
+  margin: 24px 0;
+  padding: 20px 0;
+  border-top: 1px solid var(--border);
+}
+
+.timeline-phase {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.timeline-tasks {
+  font-size: 13px;
+  color: var(--ink);
+  line-height: 1.7;
+}
+</style>
+</head>
+<body>
+
+<div class="page">
+  <h1>Checklist de Lanzamiento</h1>
+  <p class="subtitle">Todo lo que falta para publicar la web de Operis — organizado por prioridad y fase.</p>
+
+
+  <!-- ══════════ CRÍTICO ══════════ -->
+  <span class="priority-label p-critical">🔴 Crítico — Bloquea el lanzamiento</span>
+  
+  <div class="section">
+    <div class="section-header">
+      <span>Contenido esencial</span>
+      <span class="count">6 tareas</span>
+    </div>
+    <ul class="checklist">
+      <li>
+        <span class="checkbox"></span>
+        <span class="task-text"><strong>Email de contacto real.</strong> Cambiar "hola@operis.es" por tu email real en toda la web (aparece en: nav CTA, sección contacto, footer).</span>
+      </li>
+      <li>
+        <span class="checkbox"></span>
+        <span class="task-text"><strong>Decidir nombre definitivo de la agencia.</strong> Si no es "Operis", reemplazar en: título web, nav logo, hero, footer, meta tags, archivos descargables.</span>
+      </li>
+      <li>
+        <span class="checkbox"></span>
+        <span class="task-text"><strong>Casos de éxito con empresas reales.</strong> Los 3 casos actuales son ficticios. Necesitas al menos 1 caso real con métricas verificables para tener credibilidad.</span>
+      </li>
+      <li>
+        <span class="checkbox"></span>
+        <span class="task-text"><strong>Política de privacidad y términos legales.</strong> Obligatorio por RGPD si operas en la UE. Mínimo: política de privacidad, aviso legal, política de cookies.</span>
+      </li>
+      <li>
+        <span class="checkbox"></span>
+        <span class="task-text"><strong>Banner de cookies.</strong> Requerido por ley si usas Google Analytics o cualquier cookie de terceros.</span>
+      </li>
+      <li>
+        <span class="checkbox"></span>
+        <span class="task-text"><strong>Hosting y dominio.</strong> Comprar dominio (operis.es, operis.com, u otro) y contratar hosting (Netlify, Vercel, GitHub Pages son gratuitos para empezar).</span>
+      </li>
+    </ul>
+  </div>
+
+
+  <!-- ══════════ ALTA PRIORIDAD ══════════ -->
+  <span class="priority-label p-high">🟠 Alta prioridad — Impacto importante</span>
+
+  <div class="section">
+    <div class="section-header">
+      <span>SEO básico</span>
+      <span class="count">5 tareas</span>
+    </div>
+    <ul class="checklist">
+      <li>
+        <span class="checkbox"></span>
+        <span class="task-text"><strong>Meta description optimizada.</strong> Falta el tag &lt;meta name="description"&gt; con texto SEO (aparece en Google). Máximo 155 caracteres.</span>
+      </li>
+      <li>
+        <span class="checkbox"></span>
+        <span class="task-text"><strong>Open Graph tags.</strong> Para que la web se vea bien cuando alguien la comparte en LinkedIn, WhatsApp, Twitter. Mínimo: og:title, og:description, og:image.</span>
+      </li>
+      <li>
+        <span class="checkbox"></span>
+        <span class="task-text"><strong>Favicon.</strong> El icono que aparece en la pestaña del navegador. Formatos: .ico, .png, .svg.</span>
+      </li>
+      <li>
+        <span class="checkbox"></span>
+        <span class="task-text"><strong>Sitemap.xml.</strong> Ayuda a Google a indexar tu web. Puede generarse automáticamente con herramientas online o manualmente.</span>
+      </li>
+      <li>
+        <span class="checkbox"></span>
+        <span class="task-text"><strong>Google Search Console.</strong> Dar de alta la web para monitorizar indexación y errores de SEO. Gratuito.</span>
+      </li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      <span>Formulario de contacto funcional</span>
+      <span class="count">3 tareas</span>
+    </div>
+    <ul class="checklist">
+      <li>
+        <span class="checkbox"></span>
+        <span class="task-text"><strong>Implementar formulario de contacto.</strong> Ahora el CTA es un "mailto:" que abre el email. Mejor: formulario web que envía a tu email. Opciones gratuitas: Formspree, Netlify Forms, Google Forms embebido.</span>
+      </li>
+      <li>
+        <span class="checkbox"></span>
+        <span class="task-text"><strong>Email de confirmación automático.</strong> Cuando alguien envía el formulario, debería recibir un email confirmando que lo recibiste.</span>
+      </li>
+      <li>
+        <span class="checkbox"></span>
+        <span class="task-text"><strong>Protección anti-spam.</strong> Añadir reCAPTCHA de Google o honeypot para evitar spam. Crítico si el formulario es público.</span>
+      </li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      <span>Analítica</span>
+      <span class="count">2 tareas</span>
+    </div>
+    <ul class="checklist">
+      <li>
+        <span class="checkbox"></span>
+        <span class="task-text"><strong>Google Analytics o alternativa.</strong> Para saber cuántas visitas recibes, de dónde vienen, qué secciones ven. Gratis. Alternativa privada: Plausible, Fathom.</span>
+      </li>
+      <li>
+        <span class="checkbox"></span>
+        <span class="task-text"><strong>Event tracking en calculadora ROI.</strong> Medir cuánta gente usa la calculadora y con qué valores. Útil para saber si genera interés.</span>
+      </li>
+    </ul>
+  </div>
+
+
+  <!-- ══════════ PRIORIDAD MEDIA ══════════ -->
+  <span class="priority-label p-medium">🟢 Prioridad media — Mejora la experiencia</span>
+
+  <div class="section">
+    <div class="section-header">
+      <span>Optimización técnica</span>
+      <span class="count">4 tareas</span>
+    </div>
+    <ul class="checklist">
+      <li>
+        <span class="checkbox"></span>
+        <span class="task-text"><strong>Optimizar carga de fuentes.</strong> Las Google Fonts se cargan sin optimización. Usar font-display: swap y preconnect para mejorar performance.</span>
+      </li>
+      <li>
+        <span class="checkbox"></span>
+        <span class="task-text"><strong>Lazy loading de imágenes.</strong> Si añades imágenes a los casos o servicios, usa loading="lazy" para que carguen solo cuando el usuario las va a ver.</span>
+      </li>
+      <li>
+        <span class="checkbox"></span>
+        <span class="task-text"><strong>Minificar CSS y JS.</strong> Reducir tamaño del archivo HTML antes de publicar. Herramientas: cssnano, terser, o el propio hosting lo hace automáticamente.</span>
+      </li>
+      <li>
+        <span class="checkbox"></span>
+        <span class="task-text"><strong>Test de velocidad.</strong> Pasar la web por Google PageSpeed Insights y corregir warnings críticos. Objetivo: >90 en móvil.</span>
+      </li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      <span>Responsive y accesibilidad</span>
+      <span class="count">3 tareas</span>
+    </div>
+    <ul class="checklist">
+      <li>
+        <span class="checkbox"></span>
+        <span class="task-text"><strong>Test en móvil real.</strong> Abrir la web en un móvil físico (no solo Chrome DevTools) y verificar que todo se ve y funciona bien.</span>
+      </li>
+      <li>
+        <span class="checkbox"></span>
+        <span class="task-text"><strong>Menú hamburguesa en móvil.</strong> El nav actual se oculta en móvil (&lt;768px). Necesitas un menú desplegable o hamburger menu funcional.</span>
+      </li>
+      <li>
+        <span class="checkbox"></span>
+        <span class="task-text"><strong>Contraste de colores.</strong> Verificar que todos los textos pasan WCAG AA para accesibilidad. Herramienta: WebAIM Contrast Checker.</span>
+      </li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      <span>Contenido adicional</span>
+      <span class="count">4 tareas</span>
+    </div>
+    <ul class="checklist">
+      <li>
+        <span class="checkbox"></span>
+        <span class="task-text"><strong>Sección "Sobre mí/nosotros".</strong> Opcional pero genera confianza. Breve: quién eres, por qué haces esto, qué te diferencia. 2–3 párrafos máximo.</span>
+      </li>
+      <li>
+        <span class="checkbox"></span>
+        <span class="task-text"><strong>FAQs.</strong> 5–8 preguntas frecuentes anticipadas: "¿Cuánto tarda?", "¿Qué pasa si no funciona?", "¿Cobras por hora o proyecto fijo?", etc.</span>
+      </li>
+      <li>
+        <span class="checkbox"></span>
+        <span class="task-text"><strong>Testimoniales reales.</strong> Si tienes algún cliente satisfecho (aunque sea de proyecto pequeño), añade su testimonio con nombre y empresa.</span>
+      </li>
+      <li>
+        <span class="checkbox"></span>
+        <span class="task-text"><strong>Blog o sección de recursos (opcional).</strong> No es necesario para lanzar, pero útil para SEO y demostrar conocimiento. Puedes dejarlo para fase 2.</span>
+      </li>
+    </ul>
+  </div>
+
+
+  <!-- ══════════ BAJA PRIORIDAD ══════════ -->
+  <span class="priority-label p-low">🔵 Baja prioridad — Nice to have</span>
+
+  <div class="section">
+    <div class="section-header">
+      <span>Integraciones y automatización</span>
+      <span class="count">3 tareas</span>
+    </div>
+    <ul class="checklist">
+      <li>
+        <span class="checkbox"></span>
+        <span class="task-text"><strong>CRM o sistema de seguimiento de leads.</strong> Integrar el formulario con HubSpot, Pipedrive, Notion o un Google Sheet para gestionar contactos.</span>
+      </li>
+      <li>
+        <span class="checkbox"></span>
+        <span class="task-text"><strong>Calendly o sistema de reserva de auditorías.</strong> Permitir que la gente agende directamente la auditoría gratuita sin pasar por email.</span>
+      </li>
+      <li>
+        <span class="checkbox"></span>
+        <span class="task-text"><strong>Chat en vivo.</strong> Widget de chat (Intercom, Crisp, Tawk.to). Útil si tienes tiempo para responder en directo. Si no, mejor no ponerlo.</span>
+      </li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      <span>Presencia online complementaria</span>
+      <span class="count">4 tareas</span>
+    </div>
+    <ul class="checklist">
+      <li>
+        <span class="checkbox"></span>
+        <span class="task-text"><strong>Perfil de LinkedIn personal optimizado.</strong> Cabecera con la marca Operis, bio actualizada, sección de experiencia reflejando la agencia.</span>
+      </li>
+      <li>
+        <span class="checkbox"></span>
+        <span class="task-text"><strong>Página de empresa en LinkedIn.</strong> Crear página corporativa de Operis. No es crítico al inicio pero ayuda a dar imagen profesional.</span>
+      </li>
+      <li>
+        <span class="checkbox"></span>
+        <span class="task-text"><strong>Google My Business.</strong> Si ofreces servicios locales, dar de alta en Google My Business para aparecer en búsquedas locales.</span>
+      </li>
+      <li>
+        <span class="checkbox"></span>
+        <span class="task-text"><strong>Email corporativo personalizado.</strong> En lugar de Gmail personal, usar tu@operis.es con Google Workspace o similar. Cuesta ~€5/mes pero da imagen seria.</span>
+      </li>
+    </ul>
+  </div>
+
+
+  <!-- ══════════ TIMELINE SUGERIDO ══════════ -->
+  <div class="note">
+    <strong>Timeline sugerido para lanzamiento MVP (web mínima viable):</strong><br>
+    Si priorizas solo las tareas críticas + alta prioridad, puedes lanzar en 3–5 días de trabajo enfocado. El resto puede añadirse progresivamente después del lanzamiento.
+  </div>
+
+  <div class="timeline">
+    <span class="timeline-phase">Día 1–2</span>
+    <div class="timeline-tasks">
+      <strong>Contenido crítico:</strong> decidir nombre final, cambiar email de contacto, escribir política de privacidad básica (puedes usar generadores online gratis), añadir banner de cookies.<br>
+      <strong>Hosting:</strong> comprar dominio, subir web a Netlify o Vercel (gratis).
+    </div>
+  </div>
+
+  <div class="timeline">
+    <span class="timeline-phase">Día 3</span>
+    <div class="timeline-tasks">
+      <strong>Formulario:</strong> implementar Formspree o Netlify Forms, testear que funciona.<br>
+      <strong>SEO básico:</strong> añadir meta description, favicon, Open Graph tags.<br>
+      <strong>Analítica:</strong> instalar Google Analytics.
+    </div>
+  </div>
+
+  <div class="timeline">
+    <span class="timeline-phase">Día 4</span>
+    <div class="timeline-tasks">
+      <strong>Test completo:</strong> probar web en móvil real, verificar todos los links, formulario, calculadora ROI.<br>
+      <strong>Menú móvil:</strong> implementar hamburger menu funcional si es necesario.<br>
+      <strong>Performance:</strong> test de velocidad y corregir problemas críticos.
+    </div>
+  </div>
+
+  <div class="timeline">
+    <span class="timeline-phase">Día 5</span>
+    <div class="timeline-tasks">
+      <strong>Caso de éxito real:</strong> si aún no lo tienes, considera ofrecer el primer proyecto gratis/muy barato a cambio de testimonial y métricas verificables. Sin esto, la web funciona pero le falta credibilidad.<br>
+      <strong>Google Search Console:</strong> dar de alta la web.<br>
+      <strong>Lanzamiento:</strong> publicar y compartir en LinkedIn, email a contactos, etc.
+    </div>
+  </div>
+
+
+  <div class="note" style="margin-top:40px; background:#e8f5ef; border-color:#27ae60;">
+    <strong>Recuerda:</strong> Una web imperfecta lanzada es infinitamente mejor que una web perfecta que nunca sale. Lanza con lo crítico + alta prioridad, mide resultados, y mejora iterativamente. El 80% del valor está en las primeras tareas de la lista.
+  </div>
+
+</div>
+
+</body>
+</html>

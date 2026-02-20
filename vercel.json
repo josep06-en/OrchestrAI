@@ -1,0 +1,1 @@
+{"version": 2, "builds": [{"src": "web_operis_completa.html", "use": "@vercel/static"}], "routes": [{"src": "/", "dest": "/web_operis_completa.html"}, {"src": "/politica-privacidad", "dest": "/politica-privacidad.html"}, {"src": "/aviso-legal", "dest": "/aviso-legal.html"}, {"src": "/politica-cookies", "dest": "/politica-cookies.html"}]}
