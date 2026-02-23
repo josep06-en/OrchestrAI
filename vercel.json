@@ -2,7 +2,7 @@
   "version": 2,
   "builds": [
     {
-      "src": "api/leads-all.js",
+      "src": "api/leads.js",
       "use": "@vercel/node"
     },
     {
@@ -12,8 +12,8 @@
   ],
   "routes": [
     {
-      "src": "/api/leads/(.*)",
-      "dest": "/api/leads-all.js"
+      "src": "/api/leads",
+      "dest": "/api/leads.js"
     },
     {
       "src": "/",
