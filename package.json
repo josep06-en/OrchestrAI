@@ -1,24 +1,22 @@
 {
-  "name": "orchestrai-backend",
+  "name": "orchestrai-vercel",
   "version": "1.0.0",
-  "description": "Backend para gestión de leads de OrchestrAI",
-  "main": "server.js",
+  "description": "OrchestrAI - Sistema de Gestión de Leads en Vercel",
+  "main": "api/leads.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js",
-    "export": "node export.js"
+    "start": "vercel dev",
+    "build": "vercel build",
+    "deploy": "vercel --prod",
+    "dev": "vercel dev"
   },
   "dependencies": {
-    "express": "^4.18.2",
-    "sqlite3": "^5.1.6",
-    "cors": "^2.8.5",
-    "body-parser": "^1.20.2",
+    "@vercel/postgres": "^0.5.0",
     "nodemailer": "^6.9.7"
   },
   "devDependencies": {
-    "nodemon": "^3.0.1"
+    "vercel": "^32.0.0"
   },
-  "keywords": ["orchestrai", "leads", "automation", "ia"],
-  "author": "Josep Enrique Llopis",
+  "keywords": ["orchestrai", "leads", "vercel", "serverless"],
+  "author": "Josep Segarro",
   "license": "MIT"
 }

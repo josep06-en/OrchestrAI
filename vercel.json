@@ -1,1 +1,38 @@
-{"version": 2, "builds": [{"src": "web_operis_completa.html", "use": "@vercel/static"}], "routes": [{"src": "/", "dest": "/web_operis_completa.html"}, {"src": "/politica-privacidad", "dest": "/politica-privacidad.html"}, {"src": "/aviso-legal", "dest": "/aviso-legal.html"}, {"src": "/politica-cookies", "dest": "/politica-cookies.html"}]}
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "api/*.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "web_operis_completa.html",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/$1"
+    },
+    {
+      "src": "/",
+      "dest": "/web_operis_completa.html"
+    },
+    {
+      "src": "/politica-privacidad",
+      "dest": "/politica-privacidad.html"
+    },
+    {
+      "src": "/aviso-legal",
+      "dest": "/aviso-legal.html"
+    },
+    {
+      "src": "/politica-cookies",
+      "dest": "/politica-cookies.html"
+    }
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  }
+}
