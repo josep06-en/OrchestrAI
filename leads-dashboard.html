@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OrchestrAI - Gestión de Leads</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #fafaf7;
+  --paper: #ffffff;
+  --ink: #111110;
+  --muted: #7a7870;
+  --border: #d0cdc4;
+  --gold: #d4af37;
+  --green: #27ae60;
+  --red: #c0392b;
+  --blue: #2980b9;
+}
+
+body {
+  font-family: 'JetBrains Mono', monospace;
+  background: var(--bg);
+  color: var(--ink);
+  line-height: 1.6;
+  padding: 20px;
+}
+
+.container { max-width: 1200px; margin: 0 auto; }
+
+.header {
+  background: var(--paper);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 24px;
+  margin-bottom: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header h1 {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  background: var(--paper);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px;
+  text-align: center;
+}
+
+.stat-value {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 8px;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.main-content {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 24px;
+}
+
+.leads-section {
+  background: var(--paper);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 24px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.section-header h2 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.btn {
+  background: var(--ink);
+  color: var(--paper);
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn:hover { background: #333; }
+
+.btn-secondary {
+  background: var(--muted);
+  color: var(--paper);
+}
+
+.btn-secondary:hover { background: #666; }
+
+.btn-success { background: var(--green); }
+.btn-success:hover { background: #229954; }
+
+.btn-danger { background: var(--red); }
+.btn-danger:hover { background: #a93226; }
+
+.search-bar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.search-input {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 14px;
+}
+
+.filters {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--paper);
+  font-family: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.filter-btn.active {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+
+.leads-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.leads-table th {
+  background: var(--bg);
+  border-bottom: 2px solid var(--border);
+  padding: 12px 8px;
+  text-align: left;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+
+.leads-table td {
+  border-bottom: 1px solid var(--border);
+  padding: 12px 8px;
+  vertical-align: top;
+}
+
+.leads-table tr:hover { background: var(--bg); }
+
+.lead-email { font-family: monospace; color: var(--blue); }
+
+.lead-status {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.status-nuevo { background: #e8f5ef; color: var(--green); }
+.status-contactado { background: #fef3e8; color: var(--gold); }
+.status-agendado { background: #e8f0f7; color: var(--blue); }
+.status-convertido { background: #e8f8f5; color: #27ae60; }
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.actions-card {
+  background: var(--paper);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.actions-card h3 {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: var(--ink);
+}
+
+.action-btn {
+  width: 100%;
+  margin-bottom: 8px;
+  justify-content: flex-start;
+}
+
+.logs-section {
+  background: var(--paper);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.log-entry {
+  padding: 8px;
+  border-left: 3px solid var(--border);
+  margin-bottom: 8px;
+  font-size: 11px;
+}
+
+.log-success { border-color: var(--green); }
+.log-warning { border-color: var(--gold); }
+.log-error { border-color: var(--red); }
+
+.log-time {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    grid-template-columns: 1fr;
+  }
+  
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .filters {
+    flex-direction: column;
+  }
+  
+  .leads-table {
+    font-size: 10px;
+  }
+  
+  .leads-table th,
+  .leads-table td {
+    padding: 8px 4px;
+  }
+}
+
+/* Animaciones para notificaciones */
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOut {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <!-- Header -->
+  <div class="header">
+    <h1>🚀 OrchestrAI - Gestión de Leads</h1>
+    <div>
+      <span id="lastUpdate"></span>
+      <span id="refreshIndicator" style="display: none; margin-left: 10px; color: var(--green);">🔄 Actualizando...</span>
+      <button class="btn btn-secondary" onclick="refreshData()">🔄 Actualizar</button>
+    </div>
+  </div>
+
+  <!-- Estadísticas -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-value" id="totalLeads">0</div>
+      <div class="stat-label">Total Leads</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="nuevosLeads" style="color: var(--green)">0</div>
+      <div class="stat-label">Nuevos</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="contactadosLeads" style="color: var(--gold)">0</div>
+      <div class="stat-label">Contactados</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="convertidosLeads" style="color: var(--blue)">0</div>
+      <div class="stat-label">Convertidos</div>
+    </div>
+  </div>
+
+  <!-- Contenido Principal -->
+  <div class="main-content">
+    <!-- Leads -->
+    <div class="leads-section">
+      <div class="section-header">
+        <h2>📊 Leads</h2>
+        <div>
+          <button class="btn btn-success" onclick="exportToJSON()">📥 Exportar JSON</button>
+          <button class="btn btn-secondary" onclick="exportToCSV()">📈 Exportar CSV</button>
+        </div>
+      </div>
+
+      <!-- Búsqueda -->
+      <div class="search-bar">
+        <input type="text" class="search-input" id="searchInput" placeholder="🔍 Buscar por nombre, email, empresa...">
+        <button class="btn" onclick="searchLeads()">Buscar</button>
+      </div>
+
+      <!-- Filtros -->
+      <div class="filters">
+        <button class="filter-btn active" onclick="filterLeads('all', this)">Todos</button>
+        <button class="filter-btn" onclick="filterLeads('Nuevo Lead', this)">Nuevos</button>
+        <button class="filter-btn" onclick="filterLeads('Contactado', this)">Contactados</button>
+        <button class="filter-btn" onclick="filterLeads('Auditoría Agendada', this)">Agendados</button>
+        <button class="filter-btn" onclick="filterLeads('Convertido', this)">Convertidos</button>
+      </div>
+
+      <!-- Tabla de Leads -->
+      <div style="overflow-x: auto;">
+        <table class="leads-table">
+          <thead>
+            <tr>
+              <th><input type="checkbox" id="selectAll" onchange="toggleSelectAll()"></th>
+              <th>ID</th>
+              <th>Fecha</th>
+              <th>Nombre</th>
+              <th>Email</th>
+              <th>Empresa</th>
+              <th>Teléfono</th>
+              <th>Tamaño</th>
+              <th>Mensaje</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="leadsTableBody">
+            <!-- Los leads se cargarán aquí -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <!-- Acciones Rápidas -->
+      <div class="actions-card">
+        <h3>🚀 Acciones Rápidas</h3>
+        <button class="btn action-btn" onclick="refreshData()">🔄 Actualizar Datos</button>
+        <button class="btn action-btn" onclick="markAllAs('Contactado')">✅ Marcar Contactados</button>
+        <button class="btn action-btn" onclick="markAllAs('Auditoría Agendada')">📅 Marcar Agendados</button>
+        <button class="btn action-btn btn-danger" onclick="deleteSelectedLeads()">🗑️ Eliminar Seleccionados</button>
+        <button class="btn action-btn" onclick="clearOldLeads()">🗑️ Limpiar Antiguos</button>
+      </div>
+
+      <!-- Logs -->
+      <div class="logs-section">
+        <h3>📝 Logs del Sistema</h3>
+        <div id="logsContainer">
+          <!-- Los logs se cargarán aquí -->
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Estado global
+let allLeads = [];
+let filteredLeads = [];
+let currentFilter = 'all';
+
+// Inicializar
+document.addEventListener('DOMContentLoaded', function() {
+  loadLeads();
+  loadStats();
+  loadLogs();
+  updateLastUpdateTime();
+});
+
+// Cargar leads desde la base de datos
+async function loadLeads() {
+  try {
+    const response = await fetch('http://localhost:3000/api/leads', {
+      headers: {
+        'X-Auth-Key': 'orchestrAI_secure_2024'
+      }
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      allLeads = data.data || [];
+      filteredLeads = [...allLeads];
+      renderLeadsTable();
+      console.log('✅ Leads cargados:', allLeads.length);
+    } else {
+      console.error('❌ Error cargando leads');
+    }
+  } catch (error) {
+    console.error('❌ Error de conexión:', error);
+  }
+}
+
+// Cargar estadísticas
+async function loadStats() {
+  try {
+    const response = await fetch('http://localhost:3000/api/stats', {
+      headers: {
+        'X-Auth-Key': 'orchestrAI_secure_2024'
+      }
+    });
+    
+    if (response.ok) {
+      const stats = await response.json();
+      updateStatsDisplay(stats.data);
+    }
+  } catch (error) {
+    console.error('❌ Error cargando estadísticas:', error);
+  }
+}
+
+// Cargar logs
+async function loadLogs() {
+  try {
+    const response = await fetch('http://localhost:3000/api/logs', {
+      headers: {
+        'X-Auth-Key': 'orchestrAI_secure_2024'
+      }
+    });
+    
+    if (response.ok) {
+      const logs = await response.json();
+      renderLogs(logs.data || []);
+    }
+  } catch (error) {
+    console.error('❌ Error cargando logs:', error);
+  }
+}
+
+// Renderizar tabla de leads
+function renderLeadsTable() {
+  const tbody = document.getElementById('leadsTableBody');
+  tbody.innerHTML = '';
+  
+  filteredLeads.forEach(lead => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td><input type="checkbox" class="lead-checkbox" data-id="${lead.id}" data-name="${lead.nombre.replace(/'/g, "\\'")}"></td>
+      <td>${lead.id}</td>
+      <td>${formatDate(lead.timestamp)}</td>
+      <td>${lead.nombre}</td>
+      <td class="lead-email">${lead.email}</td>
+      <td>${lead.empresa || '-'}</td>
+      <td>${lead.telefono || '-'}</td>
+      <td>${lead.tamano || '-'}</td>
+      <td>${lead.mensaje ? lead.mensaje.substring(0, 50) + '...' : '-'}</td>
+      <td><span class="lead-status status-${lead.estado.toLowerCase().replace(' ', '-')}">${lead.estado}</span></td>
+      <td>
+        <button class="btn btn-secondary" onclick="updateLeadStatus(${lead.id}, 'Contactado')">✅</button>
+        <button class="btn btn-secondary" onclick="updateLeadStatus(${lead.id}, 'Auditoría Agendada')">📅</button>
+        <button class="btn btn-success" onclick="updateLeadStatus(${lead.id}, 'Convertido')">💰</button>
+        <button class="btn btn-danger" onclick="deleteLead(${lead.id}, '${lead.nombre.replace(/'/g, "\\'")}')">🗑️</button>
+      </td>
+    `;
+    tbody.appendChild(row);
+  });
+}
+
+// Actualizar display de estadísticas
+function updateStatsDisplay(stats) {
+  document.getElementById('totalLeads').textContent = stats.total_leads || 0;
+  document.getElementById('nuevosLeads').textContent = stats.nuevos_leads || 0;
+  document.getElementById('contactadosLeads').textContent = stats.contactados || 0;
+  document.getElementById('convertidosLeads').textContent = stats.auditorias_agendadas || 0;
+}
+
+// Renderizar logs
+function renderLogs(logs) {
+  const container = document.getElementById('logsContainer');
+  container.innerHTML = '';
+  
+  logs.slice(-10).reverse().forEach(log => {
+    const logEntry = document.createElement('div');
+    logEntry.className = `log-entry log-${log.level}`;
+    logEntry.innerHTML = `
+      <div class="log-time">${formatDate(log.timestamp)}</div>
+      <div><strong>[${log.level.toUpperCase()}]</strong> ${log.message}</div>
+    `;
+    container.appendChild(logEntry);
+  });
+}
+
+// Formatear fecha
+function formatDate(timestamp) {
+  return new Date(timestamp).toLocaleString('es-ES', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+}
+
+// Actualizar estado de lead
+async function updateLeadStatus(id, nuevoEstado) {
+  try {
+    const response = await fetch(`http://localhost:3000/api/leads/${id}/status`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Auth-Key': 'orchestrAI_secure_2024'
+      },
+      body: JSON.stringify({ estado: nuevoEstado })
+    });
+    
+    if (response.ok) {
+      console.log(`✅ Lead ${id} actualizado a: ${nuevoEstado}`);
+      loadLeads(); // Recargar datos
+      loadStats(); // Recargar estadísticas
+    }
+  } catch (error) {
+    console.error('❌ Error actualizando lead:', error);
+  }
+}
+
+// Filtrar leads
+function filterLeads(estado, button) {
+  currentFilter = estado;
+  
+  // Actualizar botones
+  document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+  button.classList.add('active');
+  
+  // Filtrar datos
+  if (estado === 'all') {
+    filteredLeads = [...allLeads];
+  } else {
+    filteredLeads = allLeads.filter(lead => lead.estado === estado);
+  }
+  
+  renderLeadsTable();
+}
+
+// Buscar leads
+function searchLeads() {
+  const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+  
+  if (!searchTerm) {
+    filteredLeads = [...allLeads];
+  } else {
+    filteredLeads = allLeads.filter(lead => 
+      lead.nombre.toLowerCase().includes(searchTerm) ||
+      lead.email.toLowerCase().includes(searchTerm) ||
+      (lead.empresa && lead.empresa.toLowerCase().includes(searchTerm))
+    );
+  }
+  
+  renderLeadsTable();
+}
+
+// Exportar a JSON
+async function exportToJSON() {
+  try {
+    const response = await fetch('http://localhost:3000/api/export', {
+      headers: {
+        'X-Auth-Key': 'orchestrAI_secure_2024'
+      }
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `orchestrai_leads_${new Date().toISOString().split('T')[0]}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+  } catch (error) {
+    console.error('❌ Error exportando:', error);
+  }
+}
+
+// Exportar a CSV
+async function exportToCSV() {
+  try {
+    const response = await fetch('http://localhost:3000/api/export', {
+      headers: {
+        'X-Auth-Key': 'orchestrAI_secure_2024'
+      }
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      let csv = 'ID,Fecha,Nombre,Email,Empresa,Teléfono,Tamaño,Mensaje,Estado\n';
+      
+      data.leads.forEach(lead => {
+        csv += `${lead.id},"${lead.timestamp}","${lead.nombre}","${lead.email}","${lead.empresa || ''}","${lead.telefono || ''}","${lead.tamano || ''}","${lead.mensaje || ''}","${lead.estado}"\n`;
+      });
+      
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `orchestrai_leads_${new Date().toISOString().split('T')[0]}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+  } catch (error) {
+    console.error('❌ Error exportando CSV:', error);
+  }
+}
+
+// Actualizar todos los datos
+function refreshData() {
+  // Mostrar indicador de actualización
+  const indicator = document.getElementById('refreshIndicator');
+  indicator.style.display = 'inline';
+  
+  Promise.all([
+    loadLeads(),
+    loadStats(),
+    loadLogs()
+  ]).then(() => {
+    updateLastUpdateTime();
+    indicator.style.display = 'none';
+    
+    // Verificar si hay nuevos leads
+    checkForNewLeads();
+  }).catch(error => {
+    console.error('Error actualizando datos:', error);
+    indicator.style.display = 'none';
+  });
+}
+
+// Verificar si hay nuevos leads
+let previousLeadCount = 0;
+
+function checkForNewLeads() {
+  const currentLeadCount = allLeads.length;
+  
+  if (previousLeadCount > 0 && currentLeadCount > previousLeadCount) {
+    const newLeadsCount = currentLeadCount - previousLeadCount;
+    showNotification(`🚀 ¡${newLeadsCount} nuevo${newLeadsCount > 1 ? 's' : ''} lead${newLeadsCount > 1 ? 's' : ''} recibido${newLeadsCount > 1 ? 's' : ''}!`);
+    
+    // Sonido de notificación (opcional)
+    playNotificationSound();
+  }
+  
+  previousLeadCount = currentLeadCount;
+}
+
+// Mostrar notificación en pantalla
+function showNotification(message) {
+  // Crear elemento de notificación
+  const notification = document.createElement('div');
+  notification.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: var(--green);
+    color: white;
+    padding: 15px 20px;
+    border-radius: 8px;
+    font-weight: bold;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    animation: slideIn 0.3s ease;
+  `;
+  notification.textContent = message;
+  
+  document.body.appendChild(notification);
+  
+  // Eliminar después de 5 segundos
+  setTimeout(() => {
+    notification.style.animation = 'slideOut 0.3s ease';
+    setTimeout(() => {
+      document.body.removeChild(notification);
+    }, 300);
+  }, 5000);
+}
+
+// Reproducir sonido de notificación
+function playNotificationSound() {
+  try {
+    // Crear audio con un beep simple
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    oscillator.frequency.value = 800; // Frecuencia del beep
+    oscillator.type = 'sine';
+    
+    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+    
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.1);
+  } catch (error) {
+    console.log('No se pudo reproducir sonido:', error);
+  }
+}
+
+// Seleccionar/deseleccionar todos
+function toggleSelectAll() {
+  const selectAll = document.getElementById('selectAll');
+  const checkboxes = document.querySelectorAll('.lead-checkbox');
+  
+  checkboxes.forEach(checkbox => {
+    checkbox.checked = selectAll.checked;
+  });
+}
+
+// Eliminar leads seleccionados
+async function deleteSelectedLeads() {
+  const selectedCheckboxes = document.querySelectorAll('.lead-checkbox:checked');
+  
+  if (selectedCheckboxes.length === 0) {
+    showNotification('⚠️ No hay leads seleccionados');
+    return;
+  }
+  
+  const leadNames = Array.from(selectedCheckboxes).map(cb => cb.dataset.name);
+  const confirmMessage = `¿Estás seguro de que quieres eliminar ${selectedCheckboxes.length} lead${selectedCheckboxes.length > 1 ? 's' : ''}?\n\nLeads a eliminar:\n${leadNames.join('\n')}\n\nEsta acción no se puede deshacer.`;
+  
+  if (!confirm(confirmMessage)) {
+    return;
+  }
+  
+  try {
+    const deletePromises = Array.from(selectedCheckboxes).map(async (checkbox) => {
+      const leadId = checkbox.dataset.id;
+      const response = await fetch(`http://localhost:3000/api/leads/${leadId}`, {
+        method: 'DELETE',
+        headers: {
+          'X-Auth-Key': 'orchestrAI_secure_2024'
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Error eliminando lead ${leadId}`);
+      }
+      
+      return leadId;
+    });
+    
+    const deletedIds = await Promise.all(deletePromises);
+    
+    console.log(`✅ ${deletedIds.length} leads eliminados correctamente`);
+    showNotification(`🗑️ ${deletedIds.length} lead${deletedIds.length > 1 ? 's' : ''} eliminado${deletedIds.length > 1 ? 's' : ''}`);
+    
+    // Limpiar selección
+    document.getElementById('selectAll').checked = false;
+    
+    // Recargar datos
+    loadLeads();
+    loadStats();
+    
+  } catch (error) {
+    console.error('❌ Error eliminando leads seleccionados:', error);
+    showNotification('❌ Error al eliminar leads seleccionados');
+  }
+}
+
+// Eliminar lead
+async function deleteLead(id, nombre) {
+  if (!confirm(`¿Estás seguro de que quieres eliminar el lead de "${nombre}"?\n\nEsta acción no se puede deshacer.`)) {
+    return;
+  }
+  
+  try {
+    const response = await fetch(`http://localhost:3000/api/leads/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'X-Auth-Key': 'orchestrAI_secure_2024'
+      }
+    });
+    
+    if (response.ok) {
+      console.log(`✅ Lead ${id} eliminado correctamente`);
+      showNotification(`🗑️ Lead de "${nombre}" eliminado`);
+      loadLeads(); // Recargar datos
+      loadStats(); // Recargar estadísticas
+    } else {
+      console.error('❌ Error eliminando lead');
+      showNotification('❌ Error al eliminar lead');
+    }
+  } catch (error) {
+    console.error('❌ Error eliminando lead:', error);
+    showNotification('❌ Error de conexión al eliminar');
+  }
+}
+
+// Marcar todos como...
+async function markAllAs(estado) {
+  const nuevosLeads = allLeads.filter(lead => lead.estado === 'Nuevo Lead');
+  
+  for (const lead of nuevosLeads) {
+    await updateLeadStatus(lead.id, estado);
+  }
+}
+
+// Limpiar leads antiguos (más de 30 días)
+async function clearOldLeads() {
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+  const oldLeads = allLeads.filter(lead => new Date(lead.timestamp) < thirtyDaysAgo);
+  
+  if (confirm(`¿Eliminar ${oldLeads.length} leads antiguos (más de 30 días)?`)) {
+    // Aquí iría la lógica para eliminar leads antiguos
+    console.log('🗑️ Leads antiguos eliminados');
+    loadLeads();
+  }
+}
+
+// Actualizar última actualización
+function updateLastUpdateTime() {
+  document.getElementById('lastUpdate').textContent = `Última actualización: ${new Date().toLocaleTimeString('es-ES')}`;
+}
+
+// Auto-refresh cada 60 segundos (1 minuto)
+setInterval(refreshData, 60000);
+</script>
+</body>
+</html>

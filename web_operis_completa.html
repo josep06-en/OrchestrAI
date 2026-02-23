@@ -2068,9 +2068,11 @@ function openLegalModal(documentType) {
   };
 }
 
-// ── GUARDAR LEADS EN GOOGLE SHEETS ──
+// ── GUARDAR LEADS EN SISTEMA DUAL ──
 function saveLeadToSheet(userData) {
-  const scriptUrl = 'https://script.google.com/macros/s/AKfycbx4AMXLkJM1wdJ7O6TvQu2X131i84JL5WSvvpJXWPWcSfJXS4Lkek19zLnS_uKsHOnlVg/exec';
+  // Sistema Dual: Prioridad Local + Backup Google Sheets
+  const localApiUrl = 'http://localhost:3000/api/leads';
+  const googleSheetsUrl = 'https://script.google.com/macros/s/AKfycbx4AMXLkJM1wdJ7O6TvQu2X131i84JL5WSvvpJXWPWcSfJXS4Lkek19zLnS_uKsHOnlVg/exec';
   
   const leadData = {
     timestamp: new Date().toISOString(),
@@ -2079,15 +2081,12 @@ function saveLeadToSheet(userData) {
     empresa: userData.empresa || '',
     telefono: userData.telefono || '',
     tamano: userData.tamano || '',
-    mensaje: userData.mensaje || '',
-    secret_key: 'orchestrAI_secure_2024' // Clave secreta
+    mensaje: userData.mensaje || ''
   };
   
-  // Enviar a Google Sheets con CORS mejorado
-  fetch(scriptUrl, {
+  // Sistema Dual: Intentar guardar localmente primero (más rápido)
+  fetch(localApiUrl, {
     method: 'POST',
-    mode: 'no-cors',
-    cache: 'no-cache',
     headers: {
       'Content-Type': 'application/json',
       'X-Auth-Key': 'orchestrAI_secure_2024'
@@ -2095,29 +2094,55 @@ function saveLeadToSheet(userData) {
     body: JSON.stringify(leadData)
   })
   .then(response => {
-    console.log('✅ Lead guardado en Google Sheets (no-cors):', response);
+    if (response.ok) {
+      return response.json();
+    } else {
+      throw new Error(`Local API error: ${response.status}`);
+    }
+  })
+  .then(data => {
+    console.log('✅ Lead guardado en base de datos local:', data);
+    console.log(`📊 ID asignado: ${data.database_id}`);
+    
+    // Backup automático a Google Sheets
+    saveToGoogleSheets(leadData);
   })
   .catch(error => {
-    console.error('❌ Error al guardar en Google Sheets:', error);
-    console.log('🔄 Intentando método alternativo...');
+    console.error('❌ Error guardando localmente:', error);
+    console.log('🔄 Usando Google Sheets como backup...');
     
-    // Método alternativo: enviar como parámetro URL
-    const altUrl = `${scriptUrl}?secret_key=${encodeURIComponent('orchestrAI_secure_2024')}&data=${encodeURIComponent(JSON.stringify(leadData))}`;
-    
-    fetch(altUrl, {
-      method: 'GET',
-      mode: 'no-cors',
-      cache: 'no-cache'
-    })
-    .then(altResponse => {
-      console.log('✅ Lead guardado con método alternativo:', altResponse);
-    })
-    .catch(altError => {
-      console.error('❌ Método alternativo también falló:', altError);
-      // Fallback final: guardar en localStorage
-      localStorage.setItem('lead_' + Date.now(), JSON.stringify(leadData));
-      console.log('💾 Lead guardado en localStorage como fallback');
-    });
+    // Fallback: Guardar solo en Google Sheets
+    saveToGoogleSheets(leadData);
+  });
+}
+
+// Función para guardar en Google Sheets (backup)
+function saveToGoogleSheets(leadData) {
+  const googleSheetsUrl = 'https://script.google.com/macros/s/AKfycbx4AMXLkJM1wdJ7O6TvQu2X131i84JL5WSvvpJXWPWcSfJXS4Lkek19zLnS_uKsHOnlVg/exec';
+  
+  const sheetsData = {
+    ...leadData,
+    secret_key: 'orchestrAI_secure_2024'
+  };
+  
+  fetch(googleSheetsUrl, {
+    method: 'POST',
+    mode: 'no-cors',
+    cache: 'no-cache',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Auth-Key': 'orchestrAI_secure_2024'
+    },
+    body: JSON.stringify(sheetsData)
+  })
+  .then(response => {
+    console.log('✅ Backup guardado en Google Sheets:', response);
+  })
+  .catch(error => {
+    console.error('❌ Error en backup Google Sheets:', error);
+    // Fallback final: guardar en localStorage
+    localStorage.setItem('lead_' + Date.now(), JSON.stringify(leadData));
+    console.log('💾 Lead guardado en localStorage como último fallback');
   });
 }
 
