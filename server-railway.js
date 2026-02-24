@@ -106,6 +106,11 @@ async function sendNewLeadEmail(leadData) {
     console.log('🔧 === INICIANDO ENVÍO EMAIL ===');
     console.log('📧 Lead data:', leadData);
     console.log('📧 Email destino:', ADMIN_EMAIL);
+    console.log('📧 Email configuración:', {
+      user: EMAIL_CONFIG.auth.user,
+      from: EMAIL_CONFIG.auth.user,
+      to: ADMIN_EMAIL
+    });
     
     const mailOptions = {
       from: process.env.EMAIL_FROM || 'noreply@orchestrai.com',
@@ -172,16 +177,36 @@ async function sendNewLeadEmail(leadData) {
       `
     };
 
+    console.log('📧 Enviando email con opciones:', {
+      from: mailOptions.from,
+      to: mailOptions.to,
+      subject: mailOptions.subject
+    });
+    
     const result = await transporter.send(mailOptions);
     
     console.log('✅ Email de notificación enviado:', result.messageId || result[0]?.messageId);
-    console.log('📧 Respuesta:', result.response || result[0]?.response);
+    console.log('📧 Respuesta completa:', JSON.stringify(result, null, 2));
+    console.log('📧 Respuesta SMTP:', result.response || result[0]?.response);
     
-    return { success: true, messageId: result.messageId || result[0]?.messageId };
-    
+    return {
+      success: true,
+      messageId: result.messageId || result[0]?.messageId,
+      fullResult: result
+    };
   } catch (error) {
-    console.error('❌ Error enviando email:', error);
-    return { success: false, error: error.message };
+    console.error('❌ Error enviando email de notificación:', error);
+    console.error('❌ Detalles del error:', {
+      code: error.code,
+      command: error.command,
+      response: error.response,
+      responseCode: error.responseCode
+    });
+    return {
+      success: false,
+      error: error.message,
+      fullError: error
+    };
   }
 }
 
