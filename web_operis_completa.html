@@ -2070,8 +2070,8 @@ function openLegalModal(documentType) {
 
 // ── GUARDAR LEADS EN SISTEMA DUAL ──
 function saveLeadToSheet(userData) {
-  // Sistema Dual: Prioridad Producción + Backup Google Sheets
-  const localApiUrl = 'https://0rchestrai.vercel.app/api/leads';
+  // Sistema Dual: Prioridad Local + Backup Google Sheets
+  const localApiUrl = 'http://localhost:3000/api/leads';
   const googleSheetsUrl = 'https://script.google.com/macros/s/AKfycbx4AMXLkJM1wdJ7O6TvQu2X131i84JL5WSvvpJXWPWcSfJXS4Lkek19zLnS_uKsHOnlVg/exec';
   
   const leadData = {

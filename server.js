@@ -34,6 +34,11 @@ const transporter = nodemailer.createTransport(EMAIL_CONFIG);
 // Enviar email de notificación de nuevo lead
 async function sendNewLeadEmail(leadData) {
   try {
+    console.log('🔧 Iniciando envío de email...');
+    console.log('📧 Email destino:', ADMIN_EMAIL);
+    console.log('📧 Usuario Gmail:', EMAIL_CONFIG.auth.user);
+    console.log('📧 Contraseña configurada:', EMAIL_CONFIG.auth.pass ? 'SÍ' : 'NO');
+    
     const mailOptions = {
       from: EMAIL_CONFIG.auth.user,
       to: ADMIN_EMAIL,
@@ -100,6 +105,10 @@ async function sendNewLeadEmail(leadData) {
 
     const result = await transporter.sendMail(mailOptions);
     console.log('✅ Email de notificación enviado:', result.messageId);
+    console.log('📧 Respuesta Gmail:', result.response);
+    console.log('📧 Destino confirmado:', result.accepted);
+    console.log('📧 Rechazados:', result.rejected);
+    console.log('📧 Pendientes:', result.pending);
     db.saveLog('success', `Email de notificación enviado para lead: ${leadData.email}`, leadData);
     
     return { success: true, messageId: result.messageId };
