@@ -10,12 +10,14 @@
     "logs": "railway logs"
   },
   "dependencies": {
-    "express": "^4.18.2",
-    "cors": "^2.8.5",
     "body-parser": "^1.20.2",
-    "nodemailer": "^6.9.7",
-    "pg": "^8.8.0",
-    "@sendgrid/mail": "^7.6.0"
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "nodemailer": "^6.9.13",
+    "sqlite3": "^5.1.6",
+    "sendgrid": "^5.2.3",
+    "@sendgrid/mail": "^8.1.3"
   },
   "devDependencies": {
     "nodemon": "^2.0.20"
@@ -23,7 +25,7 @@
   "engines": {
     "node": ">=18.0.0"
   },
-  "keywords": ["orchestrai", "leads", "railway", "api", "postgresql", "sendgrid"],
+  "keywords": ["orchestrai", "leads", "railway", "api", "sqlite", "sendgrid"],
   "author": "Josep Segarro",
   "license": "MIT",
   "repository": {

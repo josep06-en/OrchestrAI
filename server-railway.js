@@ -3,7 +3,8 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const nodemailer = require('nodemailer');
-const { Pool } = require('pg');
+const sqlite3 = require('sqlite3').verbose();
+const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -16,13 +17,43 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // Clave secreta para autenticación
 const SECRET_KEY = 'orchestrAI_secure_2024';
 
-// Configuración de Base de Datos PostgreSQL
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL || 'postgresql://localhost:5432/orchestrai',
-  ssl: process.env.DATABASE_URL ? {
-    rejectUnauthorized: false
-  } : false
+// Configuración de Base de Datos SQLite
+const dbPath = path.join(__dirname, 'orchestrai_leads.db');
+const db = new sqlite3.Database(dbPath, (err) => {
+  if (err) {
+    console.error('Error abriendo base de datos:', err.message);
+  } else {
+    console.log('✅ Base de datos SQLite conectada');
+    initDatabase();
+  }
 });
+
+// Inicializar base de datos
+function initDatabase() {
+  // Crear tabla de leads
+  db.run(`CREATE TABLE IF NOT EXISTS leads (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    timestamp TEXT NOT NULL,
+    nombre TEXT NOT NULL,
+    email TEXT NOT NULL,
+    empresa TEXT,
+    telefono TEXT,
+    tamano TEXT,
+    mensaje TEXT,
+    estado TEXT DEFAULT 'Nuevo Lead',
+    fuente TEXT DEFAULT 'web',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  )`);
+
+  // Crear tabla de logs
+  db.run(`CREATE TABLE IF NOT EXISTS logs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    timestamp TEXT NOT NULL,
+    tipo TEXT NOT NULL,
+    mensaje TEXT,
+    datos TEXT
+  )`);
+}
 
 // Configuración de Email (SendGrid优先 + Gmail fallback)
 const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
@@ -168,42 +199,6 @@ function authenticate(req, res, next) {
   next();
 }
 
-// Inicializar base de datos
-async function initDatabase() {
-  try {
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS leads (
-        id SERIAL PRIMARY KEY,
-        timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        nombre VARCHAR(255) NOT NULL,
-        email VARCHAR(255) NOT NULL UNIQUE,
-        empresa VARCHAR(255),
-        telefono VARCHAR(50),
-        tamano VARCHAR(50),
-        mensaje TEXT,
-        estado VARCHAR(50) DEFAULT 'Nuevo Lead',
-        fuente VARCHAR(50) DEFAULT 'web',
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
-    `);
-    
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS logs (
-        id SERIAL PRIMARY KEY,
-        timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        level VARCHAR(20) NOT NULL,
-        message TEXT NOT NULL,
-        details JSONB,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
-    `);
-    
-    console.log('✅ Base de datos PostgreSQL inicializada');
-  } catch (error) {
-    console.error('❌ Error inicializando base de datos:', error);
-  }
-}
-
 // Endpoint principal para guardar leads
 app.post('/api/leads', authenticate, async (req, res) => {
   try {
@@ -223,15 +218,15 @@ app.post('/api/leads', authenticate, async (req, res) => {
 
     console.log('📊 Datos del lead:', leadData);
 
-    // Guardar en base de datos PostgreSQL
-    const result = await pool.query(`
+    // Guardar en base de datos SQLite
+    const stmt = db.prepare(`
       INSERT INTO leads (timestamp, nombre, email, empresa, telefono, tamano, mensaje, estado, fuente)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-      RETURNING id
-    `, [leadData.timestamp, leadData.nombre, leadData.email, leadData.empresa, leadData.telefono, leadData.tamano, leadData.mensaje, leadData.estado, leadData.fuente]);
-
-    const newLeadId = result.rows[0].id;
-    console.log('💾 Lead guardado en PostgreSQL, ID:', newLeadId);
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+    
+    const result = stmt.run(leadData.timestamp, leadData.nombre, leadData.email, leadData.empresa, leadData.telefono, leadData.tamano, leadData.mensaje, leadData.estado, leadData.fuente);
+    const newLeadId = result.lastID;
+    console.log('💾 Lead guardado en SQLite, ID:', newLeadId);
 
     // Enviar email de notificación al administrador
     console.log('📧 Enviando email de notificación...');
@@ -264,10 +259,19 @@ app.post('/api/leads', authenticate, async (req, res) => {
 // GET endpoint para obtener leads
 app.get('/api/leads', authenticate, async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM leads ORDER BY created_at DESC');
-    res.json({
-      status: 'success',
-      data: result.rows
+    db.all('SELECT * FROM leads ORDER BY created_at DESC', (err, rows) => {
+      if (err) {
+        console.error('❌ Error obteniendo leads:', err);
+        res.status(500).json({
+          status: 'error',
+          message: 'Error obteniendo leads'
+        });
+      } else {
+        res.json({
+          status: 'success',
+          data: rows
+        });
+      }
     });
   } catch (error) {
     console.error('❌ Error obteniendo leads:', error);
@@ -284,16 +288,19 @@ app.put('/api/leads/:id/status', authenticate, async (req, res) => {
     const { id } = req.params;
     const { estado } = req.body;
     
-    const result = await pool.query(
-      'UPDATE leads SET estado = $1 WHERE id = $2 RETURNING *',
-      [estado, id]
-    );
-    
-    res.json({
-      status: 'success',
-      message: 'Estado actualizado exitosamente',
-      updated_id: id,
-      new_estado: estado
+    db.run('UPDATE leads SET estado = ? WHERE id = ?', [estado, id], function(err) {
+      if (err) {
+        console.error('❌ Error actualizando lead:', err);
+        res.status(500).json({
+          status: 'error',
+          message: 'Error actualizando lead'
+        });
+      } else {
+        res.json({
+          status: 'success',
+          message: 'Lead actualizado correctamente'
+        });
+      }
     });
   } catch (error) {
     console.error('❌ Error actualizando estado:', error);
@@ -309,12 +316,19 @@ app.delete('/api/leads/:id', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     
-    const result = await pool.query('DELETE FROM leads WHERE id = $1 RETURNING *', [id]);
-    
-    res.json({
-      status: 'success',
-      message: 'Lead eliminado exitosamente',
-      deleted_id: id
+    db.run('DELETE FROM leads WHERE id = ?', [id], function(err) {
+      if (err) {
+        console.error('❌ Error eliminando lead:', err);
+        res.status(500).json({
+          status: 'error',
+          message: 'Error eliminando lead'
+        });
+      } else {
+        res.json({
+          status: 'success',
+          message: 'Lead eliminado correctamente'
+        });
+      }
     });
   } catch (error) {
     console.error('❌ Error eliminando lead:', error);
@@ -328,17 +342,39 @@ app.delete('/api/leads/:id', authenticate, async (req, res) => {
 // GET endpoint para estadísticas
 app.get('/api/stats', authenticate, async (req, res) => {
   try {
-    const totalResult = await pool.query('SELECT COUNT(*) as total FROM leads');
-    const estadosResult = await pool.query('SELECT estado, COUNT(*) as count FROM leads GROUP BY estado');
-    
-    const stats = {
-      total: parseInt(totalResult.rows[0].total),
-      por_estado: estadosResult.rows
-    };
-    
-    res.json({
-      status: 'success',
-      data: stats
+    db.get('SELECT COUNT(*) as total FROM leads', (err, totalRow) => {
+      if (err) {
+        console.error('❌ Error obteniendo estadísticas:', err);
+        res.status(500).json({
+          status: 'error',
+          message: 'Error obteniendo estadísticas'
+        });
+        return;
+      }
+      
+      db.all('SELECT estado, COUNT(*) as count FROM leads GROUP BY estado', (err, estadoRows) => {
+        if (err) {
+          console.error('❌ Error obteniendo estados:', err);
+          res.status(500).json({
+            status: 'error',
+            message: 'Error obteniendo estados'
+          });
+          return;
+        }
+        
+        const stats = {
+          total: totalRow.total,
+          estados: estadoRows.reduce((acc, row) => {
+            acc[row.estado] = row.count;
+            return acc;
+          }, {})
+        };
+        
+        res.json({
+          status: 'success',
+          data: stats
+        });
+      });
     });
   } catch (error) {
     console.error('❌ Error obteniendo estadísticas:', error);
@@ -352,10 +388,19 @@ app.get('/api/stats', authenticate, async (req, res) => {
 // GET endpoint para logs
 app.get('/api/logs', authenticate, async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM logs ORDER BY created_at DESC LIMIT 100');
-    res.json({
-      status: 'success',
-      data: result.rows
+    db.all('SELECT * FROM logs ORDER BY created_at DESC LIMIT 100', (err, rows) => {
+      if (err) {
+        console.error('❌ Error obteniendo logs:', err);
+        res.status(500).json({
+          status: 'error',
+          message: 'Error obteniendo logs'
+        });
+      } else {
+        res.json({
+          status: 'success',
+          data: rows
+        });
+      }
     });
   } catch (error) {
     console.error('❌ Error obteniendo logs:', error);
@@ -369,15 +414,25 @@ app.get('/api/logs', authenticate, async (req, res) => {
 // GET endpoint para exportar leads
 app.get('/api/export', authenticate, async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM leads ORDER BY created_at DESC');
-    
-    const exportData = {
-      export_date: new Date().toISOString(),
-      total_leads: result.rows.length,
-      leads: result.rows
-    };
-    
-    res.json(exportData);
+    db.all('SELECT * FROM leads ORDER BY created_at DESC', (err, rows) => {
+      if (err) {
+        console.error('❌ Error exportando leads:', err);
+        res.status(500).json({
+          status: 'error',
+          message: 'Error exportando leads'
+        });
+      } else {
+        const exportData = {
+          export_date: new Date().toISOString(),
+          total_leads: rows.length,
+          leads: rows
+        };
+        
+        res.setHeader('Content-Type', 'application/json');
+        res.setHeader('Content-Disposition', 'attachment; filename=leads-export.json');
+        res.json(exportData);
+      }
+    });
   } catch (error) {
     console.error('❌ Error exportando leads:', error);
     res.status(500).json({
@@ -421,7 +476,7 @@ async function startServer() {
       console.log('📋 Formulario: http://localhost:' + PORT + '/web_operis_completa.html');
       console.log('📊 Dashboard: http://localhost:' + PORT + '/leads-dashboard.html');
       console.log('📧 Email configurado:', SENDGRID_API_KEY ? 'SendGrid' : 'Gmail');
-      console.log('🗄️ Base de datos:', process.env.DATABASE_URL ? 'PostgreSQL' : 'PostgreSQL local');
+      console.log('🗄️ Base de datos: SQLite local');
       console.log('✅ Sistema listo para recibir leads globalmente');
     });
   } catch (error) {
