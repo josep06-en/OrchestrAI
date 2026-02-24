@@ -477,6 +477,41 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Email test endpoint
+app.get('/test-email', async (req, res) => {
+  try {
+    console.log('🧪 === PRUEBA DE EMAIL ===');
+    
+    const testData = {
+      nombre: 'Usuario Prueba',
+      email: 'test@example.com',
+      empresa: 'Empresa Prueba',
+      telefono: '600000000',
+      tamano: 'Pequeña',
+      mensaje: 'Este es un mensaje de prueba'
+    };
+    
+    console.log('📧 Enviando email de prueba...');
+    const result = await sendNewLeadEmail(testData);
+    
+    console.log('📧 Resultado del email:', result);
+    
+    res.json({
+      status: 'success',
+      message: 'Email de prueba enviado',
+      result: result,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('❌ Error en prueba de email:', error);
+    res.status(500).json({
+      status: 'error',
+      message: error.message,
+      error: error
+    });
+  }
+});
+
 // Servir archivos estáticos
 app.get('/', (req, res) => {
   res.sendFile(__dirname + '/web_operis_completa.html');
