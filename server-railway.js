@@ -59,13 +59,13 @@ async function initEmailTransporter() {
       console.log('📧 Usando SendGrid para envío de emails');
     } else {
       // Fallback a Gmail
-      transporter = nodemailer.createTransporter(EMAIL_CONFIG);
+      transporter = nodemailer.createTransport(EMAIL_CONFIG);
       console.log('📧 Usando Gmail como fallback para envío de emails');
     }
   } catch (error) {
     console.error('❌ Error inicializando transportador de email:', error);
     // Fallback a Gmail
-    transporter = nodemailer.createTransporter(EMAIL_CONFIG);
+    transporter = nodemailer.createTransport(EMAIL_CONFIG);
   }
 }
 
