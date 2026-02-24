@@ -530,14 +530,58 @@ async function startServer() {
     // Inicializar base de datos
     await initDatabase();
     
-    // Iniciar servidor
-    app.listen(PORT, '0.0.0.0', () => {
+    const PORT = process.env.PORT || 8080;
+
+    // Manejo de señales para Railway.app
+    process.on('SIGTERM', () => {
+      console.log('📡 SIGTERM recibido - Cerrando servidor graciosamente');
+      if (db) {
+        db.close((err) => {
+          if (err) {
+            console.error('❌ Error cerrando base de datos:', err.message);
+          } else {
+            console.log('✅ Base de datos cerrada correctamente');
+          }
+          process.exit(0);
+        });
+      } else {
+        process.exit(0);
+      }
+    });
+
+    process.on('SIGINT', () => {
+      console.log('📡 SIGINT recibido - Cerrando servidor graciosamente');
+      if (db) {
+        db.close((err) => {
+          if (err) {
+            console.error('❌ Error cerrando base de datos:', err.message);
+          } else {
+            console.log('✅ Base de datos cerrada correctamente');
+          }
+          process.exit(0);
+        });
+      } else {
+        process.exit(0);
+      }
+    });
+
+    const server = app.listen(PORT, '0.0.0.0', () => {
       console.log('🚀 Servidor Railway.app corriendo en http://localhost:' + PORT);
       console.log('📋 Formulario: http://localhost:' + PORT + '/web_operis_completa.html');
       console.log('📊 Dashboard: http://localhost:' + PORT + '/leads-dashboard.html');
-      console.log('📧 Email configurado:', SENDGRID_API_KEY ? 'SendGrid' : 'Gmail');
+      console.log('📧 Email configurado:', EMAIL_CONFIG.auth ? 'Gmail' : 'SendGrid');
       console.log('🗄️ Base de datos: SQLite local');
       console.log('✅ Sistema listo para recibir leads globalmente');
+      console.log('📡 Servidor escuchando en todas las interfaces (0.0.0.0)');
+    });
+
+    // Evitar que el servidor se cierre inesperadamente
+    server.on('error', (err) => {
+      if (err.code === 'EADDRINUSE') {
+        console.error('❌ Puerto ' + PORT + ' ya está en uso');
+      } else {
+        console.error('❌ Error del servidor:', err);
+      }
     });
   } catch (error) {
     console.error('❌ Error iniciando servidor:', error);

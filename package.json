@@ -6,6 +6,8 @@
   "scripts": {
     "start": "node server-railway.js",
     "dev": "nodemon server-railway.js",
+    "build": "echo \"No build step required\"",
+    "test": "echo \"Error: no test specified\" && exit 1",
     "railway": "railway deploy",
     "logs": "railway logs"
   },
