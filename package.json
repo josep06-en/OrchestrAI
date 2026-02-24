@@ -1,22 +1,33 @@
 {
-  "name": "orchestrai-vercel",
+  "name": "orchestrai-api",
   "version": "1.0.0",
-  "description": "OrchestrAI - Sistema de Gestión de Leads en Vercel",
-  "main": "api/leads.js",
+  "description": "OrchestrAI API - Sistema de Gestión de Leads en Railway.app",
+  "main": "server-railway.js",
   "scripts": {
-    "start": "vercel dev",
-    "build": "vercel build",
-    "deploy": "vercel --prod",
-    "dev": "vercel dev"
+    "start": "node server-railway.js",
+    "dev": "nodemon server-railway.js",
+    "railway": "railway deploy",
+    "logs": "railway logs"
   },
   "dependencies": {
-    "@vercel/postgres": "^0.5.0",
-    "nodemailer": "^6.9.7"
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "body-parser": "^1.20.2",
+    "nodemailer": "^6.9.7",
+    "pg": "^8.8.0",
+    "@sendgrid/mail": "^7.6.0"
   },
   "devDependencies": {
-    "vercel": "^32.0.0"
+    "nodemon": "^2.0.20"
   },
-  "keywords": ["orchestrai", "leads", "vercel", "serverless"],
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": ["orchestrai", "leads", "railway", "api", "postgresql", "sendgrid"],
   "author": "Josep Segarro",
-  "license": "MIT"
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/josep06-en/OrchestrAI.git"
+  }
 }
