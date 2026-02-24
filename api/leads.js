@@ -80,7 +80,7 @@ async function sendNewLeadEmail(leadData) {
             <p style="margin: 10px 0;">3. Preparar propuesta personalizada</p>
             
             <div style="margin-top: 20px;">
-              <a href="https://orchestrai.vercel.app/leads-dashboard.html" 
+              <a href="https://0rchestrai.vercel.app/leads-dashboard.html" 
                  style="background: #d4af37; color: #111110; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold;">
                 📊 Ver Dashboard de Leads
               </a>
@@ -112,162 +112,182 @@ function authenticate(req) {
   return authKey === 'orchestrAI_secure_2024';
 }
 
-// GET - Obtener todos los leads
-export async function GET(req) {
-  try {
-    if (!authenticate(req)) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
+export default async function handler(req, res) {
+  // Configurar CORS
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Auth-Key');
 
-    const client = await initClient();
-    const { rows } = await client.query('SELECT * FROM leads ORDER BY created_at DESC');
-    
-    return new Response(JSON.stringify({
-      status: 'success',
-      data: rows
-    }), {
-      headers: { 'Content-Type': 'application/json' }
-    });
-    
-  } catch (error) {
-    console.error('Error en GET /api/leads:', error);
-    return new Response(JSON.stringify({
-      status: 'error',
-      message: error.message
-    }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
-    });
+  if (req.method === 'OPTIONS') {
+    res.status(200).end();
+    return;
   }
-}
 
-// POST - Crear nuevo lead
-export async function POST(req) {
   try {
-    if (!authenticate(req)) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
+    // Para debugging
+    console.log('🔍 Request method:', req.method);
+    console.log('🔍 Request URL:', req.url);
+    console.log('🔍 Headers:', req.headers);
 
-    const leadData = await req.json();
-    
-    // Validar datos requeridos
-    if (!leadData.nombre || !leadData.email) {
-      return new Response(JSON.stringify({
-        status: 'error',
-        message: 'Nombre y email son requeridos'
-      }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
-
+    // Inicializar base de datos
     const client = await initClient();
-    
-    // Insertar lead en base de datos
-    const result = await client.query(`
-      INSERT INTO leads (timestamp, nombre, email, empresa, telefono, tamano, mensaje, estado, fuente)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-      RETURNING id
-    `, [
-      leadData.timestamp || new Date().toISOString(),
-      leadData.nombre,
-      leadData.email,
-      leadData.empresa || '',
-      leadData.telefono || '',
-      leadData.tamano || '',
-      leadData.mensaje || '',
-      leadData.estado || 'Nuevo Lead',
-      leadData.fuente || 'web'
-    ]);
+    console.log('✅ Base de datos conectada');
 
-    const newLeadId = result.rows[0].id;
-    console.log(`✅ Lead guardado con ID: ${newLeadId}`);
-
-    // Enviar email de notificación
-    try {
-      const emailResult = await sendNewLeadEmail(leadData);
-      if (emailResult.success) {
-        console.log('✅ Email de notificación enviado');
-      } else {
-        console.error('❌ Error enviando email:', emailResult.error);
+    // GET - Obtener todos los leads
+    if (req.method === 'GET') {
+      console.log('📥 GET request received');
+      
+      if (!authenticate(req)) {
+        console.log('❌ Authentication failed');
+        return res.status(401).json({ error: 'Unauthorized' });
       }
-    } catch (emailError) {
-      console.error('❌ Error crítico enviando email:', emailError);
+
+      const { rows } = await client.query('SELECT * FROM leads ORDER BY created_at DESC');
+      console.log('✅ Leads retrieved:', rows.length);
+      
+      return res.status(200).json({
+        status: 'success',
+        data: rows
+      });
     }
 
-    return new Response(JSON.stringify({
-      status: 'success',
-      message: 'Lead guardado exitosamente',
-      data: {
-        id: newLeadId,
-        ...leadData
+    // POST - Crear nuevo lead
+    if (req.method === 'POST') {
+      console.log('📤 POST request received');
+      
+      if (!authenticate(req)) {
+        console.log('❌ Authentication failed');
+        return res.status(401).json({ error: 'Unauthorized' });
       }
-    }), {
-      status: 201,
-      headers: { 'Content-Type': 'application/json' }
-    });
+
+      const body = req.body;
+      const leadData = body;
+      
+      console.log('📊 Lead data:', leadData);
+      
+      // Validar datos requeridos
+      if (!leadData.nombre || !leadData.email) {
+        return res.status(400).json({
+          status: 'error',
+          message: 'Nombre y email son requeridos'
+        });
+      }
+
+      // Insertar lead en base de datos
+      const result = await client.query(`
+        INSERT INTO leads (timestamp, nombre, email, empresa, telefono, tamano, mensaje, estado, fuente)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+        RETURNING id
+      `, [
+        leadData.timestamp || new Date().toISOString(),
+        leadData.nombre,
+        leadData.email,
+        leadData.empresa || '',
+        leadData.telefono || '',
+        leadData.tamano || '',
+        leadData.mensaje || '',
+        leadData.estado || 'Nuevo Lead',
+        leadData.fuente || 'web'
+      ]);
+
+      const newLeadId = result.rows[0].id;
+      console.log(`✅ Lead guardado con ID: ${newLeadId}`);
+
+      // Enviar email de notificación
+      try {
+        const emailResult = await sendNewLeadEmail(leadData);
+        if (emailResult.success) {
+          console.log('✅ Email de notificación enviado');
+        } else {
+          console.error('❌ Error enviando email:', emailResult.error);
+        }
+      } catch (emailError) {
+        console.error('❌ Error crítico enviando email:', emailError);
+      }
+
+      return res.status(201).json({
+        status: 'success',
+        message: 'Lead guardado exitosamente',
+        data: {
+          id: newLeadId,
+          ...leadData
+        }
+      });
+    }
+
+    // DELETE - Eliminar lead
+    if (req.method === 'DELETE') {
+      console.log('🗑️ DELETE request received');
+      
+      if (!authenticate(req)) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+
+      const url = req.url;
+      const id = url.split('/').pop();
+      
+      console.log('🗑️ Deleting lead ID:', id);
+      
+      if (!id) {
+        return res.status(400).json({
+          status: 'error',
+          message: 'ID del lead es requerido'
+        });
+      }
+
+      const result = await client.query('DELETE FROM leads WHERE id = $1', [id]);
+
+      return res.status(200).json({
+        status: 'success',
+        message: 'Lead eliminado exitosamente',
+        deleted_id: id,
+        changes: result.rowCount
+      });
+    }
+
+    // PUT - Actualizar estado
+    if (req.method === 'PUT') {
+      console.log('✏️ PUT request received');
+      
+      if (!authenticate(req)) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+
+      const url = req.url;
+      const id = url.split('/').filter(Boolean).slice(-2, -1)[0];
+      const { estado } = req.body;
+      
+      console.log('✏️ Updating lead ID:', id, 'to estado:', estado);
+      
+      if (!id || !estado) {
+        return res.status(400).json({
+          status: 'error',
+          message: 'ID y estado son requeridos'
+        });
+      }
+
+      const result = await client.query(
+        'UPDATE leads SET estado = $1 WHERE id = $2',
+        [estado, id]
+      );
+
+      return res.status(200).json({
+        status: 'success',
+        message: 'Estado actualizado exitosamente',
+        updated_id: id,
+        new_estado: estado,
+        changes: result.rowCount
+      });
+    }
+
+    console.log('❌ Method not allowed:', req.method);
+    res.status(405).json({ error: 'Method not allowed' });
 
   } catch (error) {
-    console.error('Error en POST /api/leads:', error);
-    return new Response(JSON.stringify({
+    console.error('❌ Error en API:', error);
+    res.status(500).json({
       status: 'error',
       message: error.message
-    }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
-    });
-  }
-}
-
-// DELETE - Eliminar lead
-export async function DELETE(req) {
-  try {
-    if (!authenticate(req)) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
-
-    const url = new URL(req.url);
-    const id = url.pathname.split('/').pop();
-    
-    if (!id) {
-      return new Response(JSON.stringify({
-        status: 'error',
-        message: 'ID del lead es requerido'
-      }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
-
-    const client = await initClient();
-    const result = await client.query('DELETE FROM leads WHERE id = $1', [id]);
-
-    return new Response(JSON.stringify({
-      status: 'success',
-      message: 'Lead eliminado exitosamente',
-      deleted_id: id,
-      changes: result.rowCount
-    }), {
-      headers: { 'Content-Type': 'application/json' }
-    });
-
-  } catch (error) {
-    console.error('Error en DELETE /api/leads:', error);
-    return new Response(JSON.stringify({
-      status: 'error',
-      message: error.message
-    }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
     });
   }
 }
