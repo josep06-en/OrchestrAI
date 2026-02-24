@@ -56,27 +56,22 @@ function initDatabase() {
 }
 
 // Configuración de Email (SendGrid优先 + Gmail fallback)
-const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
-const EMAIL_CONFIG = {
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER || 'jenriquellopis@gmail.com',
-    pass: process.env.EMAIL_PASS || 'tuha tyij klfj qppy'
-  }
-};
+const EMAIL_USER = process.env.EMAIL_USER || 'josep.segarro@gmail.com';
+const EMAIL_PASS = process.env.EMAIL_PASS || 'tuha tyij klfj qppy';
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'jenriquellopis@gmail.com';
+const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY || '';
 
-// Transportador de Email
-let transporter;
+// Configuración de Email con fallback
+let transporter = null;
 
-// Inicializar transportador de email
 async function initEmailTransporter() {
   try {
-    if (SENDGRID_API_KEY) {
-      // Usar SendGrid si está configurado
+    // Intentar SendGrid primero
+    if (SENDGRID_API_KEY && SENDGRID_API_KEY !== '') {
       const sgMail = require('@sendgrid/mail');
       sgMail.setApiKey(SENDGRID_API_KEY);
       transporter = {
+        type: 'sendgrid',
         send: async (mailOptions) => {
           const msg = {
             to: mailOptions.to,
@@ -182,6 +177,10 @@ async function sendNewLeadEmail(leadData) {
       to: mailOptions.to,
       subject: mailOptions.subject
     });
+    
+    if (!transporter) {
+      throw new Error('Transporter de email no configurado');
+    }
     
     const result = await transporter.send(mailOptions);
     
