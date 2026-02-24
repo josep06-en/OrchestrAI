@@ -17,6 +17,6 @@ echo ========================================
 echo.
 
 cd /d "%~dp0"
-node server-debug.js
+node server-minimal.js
 
 pause

@@ -163,11 +163,17 @@ app.post('/api/leads', authenticate, async (req, res) => {
     
     // 📧 Enviar email de notificación al administrador
     try {
+      console.log('🔧 === INICIANDO ENVÍO EMAIL REAL ===');
+      console.log('📧 Lead data:', leadData);
+      console.log('📧 Email destino:', ADMIN_EMAIL);
+      
       const emailResult = await sendNewLeadEmail(leadData);
+      
       if (emailResult.success) {
-        console.log('✅ Email de notificación enviado al administrador');
+        console.log('✅ Email de notificación ENVIADO al administrador');
+        console.log('📧 Message ID:', emailResult.messageId);
       } else {
-        console.error('❌ Error enviando email de notificación:', emailResult.error);
+        console.error('❌ ERROR enviando email de notificación:', emailResult.error);
       }
     } catch (emailError) {
       console.error('❌ Error crítico enviando email:', emailError);
