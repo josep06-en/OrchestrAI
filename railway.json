@@ -1,0 +1,10 @@
+{
+  "name": "orchestrai-api",
+  "services": {
+    "api": {
+      "buildCommand": "npm install && npm start",
+      "startCommand": "npm start",
+      "healthcheckPath": "/api/health"
+    }
+  }
+}
