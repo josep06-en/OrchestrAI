@@ -580,7 +580,7 @@ async function startServer() {
       console.log('🚀 Servidor Railway.app corriendo en http://localhost:' + PORT);
       console.log('📋 Formulario: http://localhost:' + PORT + '/web_operis_completa.html');
       console.log('📊 Dashboard: http://localhost:' + PORT + '/leads-dashboard.html');
-      console.log('📧 Email configurado:', EMAIL_CONFIG.auth ? 'Gmail' : 'SendGrid');
+      console.log('📧 Email configurado:', transporter ? (transporter.type === 'sendgrid' ? 'SendGrid' : 'Gmail') : 'No configurado');
       console.log('🗄️ Base de datos: SQLite local');
       console.log('✅ Sistema listo para recibir leads globalmente');
       console.log('📡 Servidor escuchando en todas las interfaces (0.0.0.0)');
